@@ -8,7 +8,6 @@ import {
   hideLoader,
   showLoadMoreButton,
   hideLoadMoreButton,
-  scrollGallery,
 } from "./js/render-functions.js";
 
 import { getImagesByQuery } from "./js/pixabay-api.js";
@@ -27,13 +26,12 @@ searchInput.addEventListener("input", () => {
   }
 });
 
-async function handleData(data, isNewSearch = false) {
-  if (isNewSearch) clearGallery();
-
+async function handleData(data) {
   const newCardsCount = createGallery(data.hits);
 
-  const totalLoaded = (page - 1) * 15 + newCardsCount;
+  page += 1;
 
+  const totalLoaded = (page - 1) * data.hits.length + newCardsCount;
   if (totalLoaded < data.totalHits) {
     showLoadMoreButton();
   } else {
@@ -43,9 +41,17 @@ async function handleData(data, isNewSearch = false) {
     });
   }
 
-  page += 1;
-
-  if (!isNewSearch) scrollGallery(newCardsCount);
+  if (newCardsCount > 0) {
+    const gallery = document.querySelector(".gallery");
+    const firstNewCard = gallery.children[(page - 2) * data.hits.length];
+    if (firstNewCard) {
+      const { height: cardHeight } = firstNewCard.getBoundingClientRect();
+      window.scrollBy({
+        top: cardHeight * newCardsCount,
+        behavior: "smooth",
+      });
+    }
+  }
 }
 
 form.addEventListener("submit", async (e) => {
@@ -59,6 +65,7 @@ form.addEventListener("submit", async (e) => {
 
   page = 1;
   hideLoadMoreButton();
+  clearGallery();
   showLoader();
 
   try {
@@ -68,7 +75,7 @@ form.addEventListener("submit", async (e) => {
       hideLoadMoreButton();
       return;
     }
-    await handleData(data, true);
+    await handleData(data);
   } catch (err) {
     console.error(err);
     iziToast.error({ message: "Something went wrong!" });
@@ -83,7 +90,11 @@ loadMoreBtn.addEventListener("click", async () => {
 
   try {
     const data = await getImagesByQuery(searchText, page);
-    await handleData(data, false);
+    if (!data.hits.length) {
+      iziToast.info({ message: "No more images to load!" });
+      return;
+    }
+    await handleData(data);
   } catch (err) {
     console.error(err);
     iziToast.error({ message: "Something went wrong!" });
