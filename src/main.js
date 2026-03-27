@@ -43,14 +43,12 @@ async function handleData(data) {
 
   if (newCardsCount > 0) {
     const gallery = document.querySelector(".gallery");
-    const firstNewCard = gallery.children[(page - 2) * data.hits.length];
-    if (firstNewCard) {
-      const { height: cardHeight } = firstNewCard.getBoundingClientRect();
-      window.scrollBy({
-        top: cardHeight * newCardsCount,
-        behavior: "smooth",
-      });
-    }
+    const { height: galleryHeight } = gallery.getBoundingClientRect();
+
+    window.scrollBy({
+      top: galleryHeight * 2,
+      behavior: "smooth",
+    });
   }
 }
 
