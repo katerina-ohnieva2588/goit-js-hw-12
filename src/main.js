@@ -31,7 +31,9 @@ async function handleData(data) {
 
   page += 1;
 
-  const totalLoaded = (page - 1) * data.hits.length + newCardsCount;
+  const gallery = document.querySelector(".gallery");
+  const totalLoaded = gallery.children.length; 
+
   if (totalLoaded < data.totalHits) {
     showLoadMoreButton();
   } else {
@@ -42,13 +44,12 @@ async function handleData(data) {
   }
 
   if (newCardsCount > 0) {
-    const gallery = document.querySelector(".gallery");
     const firstCard = gallery.querySelector(".gallery-item");
 
     if (firstCard) {
       const { height: cardHeight } = firstCard.getBoundingClientRect();
       window.scrollBy({
-        top: cardHeight * 2, 
+        top: cardHeight * 2,
         behavior: "smooth",
       });
     }
